@@ -1,7 +1,7 @@
 <template>
   <div class="table">
     <el-table :data="list" :row-class-name="tableRowClassName">
-      <el-table-column prop="course_img" label="图片">
+      <el-table-column prop="course_img" label="封面" width="110">
         <template #default="scope">
           <img :src="scope.row.course_img" class="courseImg-img">
         </template>
@@ -21,7 +21,7 @@
         <template #default="scope">
           <el-popconfirm title="确定要归还图书吗?" @confirm="returnHandle(scope.row._id)">
             <template #reference>
-              <el-button type="warning">归还</el-button>
+              <el-button type="primary" plain>归还</el-button>
             </template>
           </el-popconfirm>
         </template>
@@ -69,7 +69,10 @@ const formatDate = (date) => {
 </script>
 <style lang='less' scoped>
 .courseImg-img {
-  width: 150px;
-  height: 100px;
+  width: 64px;
+  height: 88px;
+  object-fit: contain;
+  background: #f5f7fa;
+  border-radius: 6px;
 }
 </style>

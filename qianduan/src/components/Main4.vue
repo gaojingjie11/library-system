@@ -1,5 +1,5 @@
 <template>
-  <div class="main">
+  <div class="main page-shell"><div class="page-heading"><div><h2>全部借阅</h2><p>查看全馆借阅记录，协助用户办理归还。</p></div></div>
     <Table :list="data.list" :returnHandle="returnHandle" />
     <el-pagination background layout="prev, pager, next" :total="data.total" :page-size="5"
       :current-page="data.page" @current-change="handleCurrentChange" />
@@ -34,55 +34,6 @@ const returnHandle = async (id) => {
 };
 onMounted(() => handleCurrentChange(1));
 </script>
-<style lang='less' scoped>
-.el-form {
-  display: flex;
-}
-
-.main {
-  background-color: #fff;
-  padding: 20px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-
-  .input-with-select {
-    width: 400px;
-    margin-bottom: 40px;
-  }
-}
-
-:deep(.el-table__header-wrapper) {
-  position: fixed;
-  z-index: 20;
-}
-
-:deep(.el-table__inner-wrapper) {
-  overflow: hidden;
-}
-
-:deep(.el-table__body-wrapper) {
-  margin-top: 40px;
-}
-
-:deep(.el-input__inner) {
-  width: 300px;
-  margin-right: 10px;
-}
-
-:deep(.warning-row) {
-  --el-table-tr-bg-color: var(--el-color-warning-light-9) !important;
-  height: 140px !important;
-}
-
-.table {
-  height: 80vh;
-  width: 85vw;
-  overflow: hidden;
-  overflow-y: scroll;
-}
-
-.table::-webkit-scrollbar {
-  display: none
-}
+<style scoped>
+.main { min-width: 0; }
 </style>

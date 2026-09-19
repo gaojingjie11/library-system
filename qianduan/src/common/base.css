@@ -37,8 +37,12 @@ li {
 
 .page-shell {
   width: 100%;
-  min-height: 100%;
-  padding: 24px;
+  padding: 28px;
+  background: #fff;
+  border: 1px solid #e7edf4;
+  border-radius: 14px;
+  box-shadow: 0 3px 18px rgba(30, 50, 80, .03);
+  min-width: 0;
 }
 
 .page-heading {
@@ -51,11 +55,38 @@ li {
 .page-heading h2 {
   margin: 0;
   color: #1f2d3d;
-  font-size: 22px;
+  font-size: 24px;
+  letter-spacing: -.5px;
 }
 
 .page-heading p {
   margin: 6px 0 0;
   color: #909399;
   font-size: 13px;
+}
+
+:root { --el-color-primary: #426fe8; --el-border-radius-base: 7px; --el-border-color: #e1e7ef; --el-text-color-primary: #24344a; }
+.home .el-table { --el-table-header-bg-color: #f7f9fc; --el-table-row-hover-bg-color: #f5f8fe; --el-table-border-color: #edf1f6; border: 1px solid #edf1f6; border-radius: 10px; }
+.home, .login, .register { --el-color-primary: #426fe8; }
+.home .el-table th.el-table__cell { padding: 14px 0; font-weight: 500; color: #738198; font-size: 12px; }
+.home .el-table td.el-table__cell { padding: 14px 0; }
+.home .el-table .warning-row { --el-table-tr-bg-color: #fff !important; height: auto !important; }
+.home .el-table .cell { padding-left: 16px; padding-right: 16px; }
+.home .table { width: 100%; min-width: 0; overflow-x: auto; }
+.home .el-pagination { justify-content: center; margin-top: 24px; }
+.home .action-group .el-button + .el-button, .home .toolbar .el-button + .el-button { margin-left: 0; }
+.home .el-button { font-weight: 500; }
+.home .profile-card { border: 0; background: #fafbfd; border-radius: 12px; padding: 16px; }
+.home .el-dialog { border-radius: 14px; max-width: calc(100vw - 32px); }
+.home .el-dialog__body { padding: 24px; }
+.home .cover-preview { background: #f5f7fa; }
+.role-badge { display: inline-block; padding: 4px 9px; border-radius: 5px; background: #f0f3f7; color: #68788e; font-size: 12px; white-space: nowrap; }
+.role-admin { background: #eef2ff; color: #526bc6; }
+.login .bgp, .register .bgp { background: radial-gradient(ellipse at 20% 20%, #dce7ff, transparent 55%), #edf2f9 !important; }
+.login .login_container, .register .register_container { box-shadow: 0 20px 70px #253f6b1a; border: 1px solid #e3e9f2; border-radius: 18px !important; padding: 36px !important; max-width: calc(100vw - 32px); }
+.login .login_container h1, .register .register_container h1 { color: #233550; font-size: 24px; }
+@media (max-width: 760px) {
+  .page-shell { padding: 18px; }
+  .page-heading h2 { font-size: 21px; }
+  .home .el-table { min-width: 720px; }
 }

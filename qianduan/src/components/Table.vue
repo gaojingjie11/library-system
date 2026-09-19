@@ -1,14 +1,14 @@
 <template>
   <div class="table">
     <el-table :data="list" :row-class-name="tableRowClassName">
-      <el-table-column prop="course_img" label="图片">
+      <el-table-column prop="course_img" label="封面" width="110">
         <template #default="scope">
           <img :src="scope.row.course_img" class="courseImg-img">
         </template>
       </el-table-column>
-      <el-table-column prop="title" label="书名">
+      <el-table-column prop="title" label="书名" min-width="160">
       </el-table-column>
-      <el-table-column prop="outhor" label="作者">
+      <el-table-column prop="outhor" label="作者" min-width="120">
       </el-table-column>
       <el-table-column prop="point" label="评分">
       </el-table-column>
@@ -16,7 +16,7 @@
       </el-table-column>
       <el-table-column prop="num" label="库存">
       </el-table-column>
-      <el-table-column label="操作"  class-name="last-column" width="300">
+      <el-table-column label="操作" class-name="last-column" width="260">
        
         <template #default="scope">
           <el-button v-if="performance" type="primary" @click="editClick(scope.row)">
@@ -24,12 +24,12 @@
           </el-button>
           <el-popconfirm title="确定要删除该课程吗?" @confirm="deleteHandle(scope.row._id)">
             <template #reference>
-              <el-button v-if="performance" type="danger">删除</el-button>
+              <el-button v-if="performance" type="danger" plain>删除</el-button>
             </template>
           </el-popconfirm>
           <el-popconfirm title="确定要借阅该课程吗?" @confirm="borrowHandle(scope.row._id)">
             <template #reference>
-              <el-button type="warning">借阅</el-button>
+              <el-button type="primary" plain>借阅</el-button>
             </template>
           </el-popconfirm>
         </template>
@@ -75,9 +75,12 @@ onMounted(()=>{
 </script>
 <style lang='less' scoped>
 .courseImg-img {
-  width: 150px;
-  height: 100px;
+  width: 64px;
+  height: 88px;
+  object-fit: contain;
+  background: #f5f7fa;
+  border-radius: 6px;
   border-radius: 8px;
-  object-fit: cover;
+  object-fit: contain;
 }
 </style>

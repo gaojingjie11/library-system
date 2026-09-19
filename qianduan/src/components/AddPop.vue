@@ -16,7 +16,7 @@
         </el-form-item>
       </el-form>
       <div v-if="uploadUrl">
-      <p><img :src="uploadUrl" style="border-radius: 50%;width:100px;margin-left: 90px;"></p>
+      <p><img :src="uploadUrl" style="width:100px;height:140px;object-fit:contain;border-radius:6px;"></p>
       
     </div>
     <el-form :model="addData" ref="ruleFormAdd">

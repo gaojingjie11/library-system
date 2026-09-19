@@ -1,12 +1,12 @@
 <template>
   <div class="home">
     <el-container>
-      <el-aside width="200px">
-        <Aside :isCollapse='isCollapse'  />
+      <el-aside :width="isCollapse ? '72px' : '224px'">
+        <Aside :isCollapse='isCollapse' :active='showComponent' :isAdmin="userInfo.identity === 'admin'" />
       </el-aside>
       <el-container>
         <el-header>
-          <Header :handleCollapse='handleCollapse' :isCollapse='isCollapse' :userInfo='userInfo'/>
+          <Header :handleCollapse='handleCollapse' :isCollapse='isCollapse' :userInfo='userInfo' :title="pageTitles[showComponent]"/>
         </el-header>
         <el-main>
           <Main v-if="showComponent === 'Main'" />    
@@ -30,6 +30,7 @@ import Aside from '../components/Aside.vue'
 import Main from '../components/Main.vue'
 import Main2 from '../components/Main2.vue'
 import Main3 from '../components/Main3.vue'
+import Main4 from '../components/Main4.vue'
 import Profile from '../components/Profile.vue'
 import { onMounted, ref ,onBeforeUnmount} from 'vue'
 import { getUserInfo } from '@/api'
@@ -37,6 +38,7 @@ import { reactive } from 'vue'
 import emitter from '@/utils/eventBus'
 
 
+const pageTitles = { Main: '图书馆藏', Main2: '用户管理', Main3: '我的借阅', Main4: '全部借阅', Profile: '个人中心' };
 const isCollapse = ref(false)
 const handleCollapse = () => {
   isCollapse.value = !isCollapse.value
@@ -109,25 +111,12 @@ onBeforeUnmount(() => {
 });  
 </script>
 
-<style lang='less' scoped>
-.el-aside {
-  background-color: #1f2937;
-  overflow: hidden;
-}
-
-.el-container {
-  height: 100vh;
-}
-
-.el-main {
-  display: flex;
-  padding: 0;
-  background: #f4f7fb;
-}
-
-.el-header {
-  background-color: #fff;
-  padding: 0;
-  height: 64px;
-}
+<style scoped>
+.home { height: 100vh; overflow: hidden; }
+.home > .el-container { height: 100%; }
+.el-aside { background: #182537; transition: width .2s; overflow-x: hidden; }
+.el-container { min-width: 0; min-height: 0; }
+.el-main { padding: 28px; background: #f3f6fa; overflow: auto; }
+.el-header { padding: 0; height: 72px; background: white; border-bottom: 1px solid #e8edf3; }
+@media (max-width: 760px) { .el-main { padding: 12px; } }
 </style>

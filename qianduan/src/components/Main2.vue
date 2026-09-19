@@ -161,55 +161,8 @@ const deleteHandle = (val) => {
 
 
 </script>
-<style lang='less' scoped>
-.toolbar {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.search-input {
-  width: 320px;
-}
-
-.el-form {
-  display: flex;
-}
-
-.main {
-  background-color: #fff;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-
-  .page-heading {
-    align-self: stretch;
-  }
-}
-
-:deep(.el-table__header-wrapper) {
-  position: static;
-}
-
-:deep(.el-table__inner-wrapper) {
-  overflow: hidden;
-}
-
-:deep(.warning-row) {
-  --el-table-tr-bg-color: var(--el-color-warning-light-9) !important;
-  height: 86px !important;
-}
-
-.table {
-  flex: 1;
-  width: 100%;
-  overflow: hidden;
-  overflow-y: scroll;
-}
-
-.table::-webkit-scrollbar {
-  display: none
-}
+<style scoped>
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 24px; }
+.filter-input { width: 160px; }
+.search-input { width: min(320px, 100%); }
 </style>

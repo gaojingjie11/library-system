@@ -60,7 +60,7 @@
       <el-button type="primary" @click="handleClick"
         >搜索</el-button>
 
-      <el-button v-if="isAdmin" type="warning" @click="handleAdd" > 新增图书 </el-button>
+      <el-button v-if="isAdmin" type="primary" plain @click="handleAdd" > 新增图书 </el-button>
 
 
     </div>
@@ -161,53 +161,8 @@ onMounted(async () => {
   } catch { /* interceptor displays error */ }
 });
 </script>
-<style lang='less' scoped>
-.el-form {
-  display: flex;
-}
-
-.main {
-  background-color: #fff;
-  margin: 0;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-
-  .toolbar {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .filter-input {
-    width: 150px;
-  }
-}
-
-:deep(.el-table__header-wrapper) {
-  position: static;
-}
-
-:deep(.el-table__inner-wrapper) {
-  overflow: hidden;
-}
-
-:deep(.warning-row) {
-  --el-table-tr-bg-color: var(--el-color-warning-light-9) !important;
-  height: 104px !important;
-}
-
-.table {
-  flex: 1;
-  width: 100%;
-  overflow: hidden;
-  overflow-y: scroll;
-}
-
-.table::-webkit-scrollbar {
-  display: none
-}
+<style scoped>
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 24px; }
+.filter-input { width: 160px; }
+.search-input { width: min(320px, 100%); }
 </style>

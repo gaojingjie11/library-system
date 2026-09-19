@@ -99,4 +99,5 @@ const save = async () => {
 .profile-card { max-width: 680px; }
 .profile-avatar { width: 96px; height: 96px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 3px solid #e8f3ff; }
 .avatar-tip { color: #909399; font-size: 12px; text-align: center; margin-top: 6px; }
+:deep(.el-upload) { display: flex; flex-direction: column; gap: 6px; }
 </style>

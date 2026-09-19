@@ -15,9 +15,9 @@
       </el-table-column>
       <el-table-column label="身份" min-width="100">
         <template #default="scope">
-          <el-tag :type="scope.row.identity === 'admin' ? 'warning' : 'info'">
+          <span class="role-badge" :class="{ 'role-admin': scope.row.identity === 'admin' }">
             {{ scope.row.identity === 'admin' ? '管理员' : '普通用户' }}
-          </el-tag>
+          </span>
         </template>
       </el-table-column>
       
@@ -26,15 +26,15 @@
           <div class="action-group">
           <el-popconfirm title="确定要重置吗?" @confirm="changeHandle(scope.row._id)">
             <template #reference>
-              <el-button size="small" type="warning">重置密码</el-button>
+              <el-button size="small" type="warning" plain>重置密码</el-button>
             </template>
           </el-popconfirm>
         
           
-          <el-button size="small" type="primary" @click="openDrawer(scope.row._id)">借阅信息</el-button>
+          <el-button size="small" type="primary" plain @click="openDrawer(scope.row._id)">借阅信息</el-button>
 
           <el-button
-            size="small"
+            size="small" plain
             :type="scope.row.identity === 'admin' ? 'warning' : 'success'"
             :disabled="String(scope.row._id) === String(currentUserId)"
             @click="identityHandle(scope.row)"
@@ -202,7 +202,8 @@ const onDrawerClose = () => {
   .el-table {
     .course-img {
       width: 100px;
-      height: 70px;
+      height: 100px;
+      object-fit: contain;
     }
 
     .el-table__row.warning-row {

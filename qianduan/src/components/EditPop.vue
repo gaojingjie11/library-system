@@ -79,6 +79,6 @@ const submitForm = async () => {
 </script>
 
 <style lang="less" scoped>
-.cover-preview { width: 92px; height: 72px; border-radius: 8px; object-fit: cover; cursor: pointer; border: 1px solid #ebeef5; }
+.cover-preview { width: 100px; height: 140px; border-radius: 8px; object-fit: contain; cursor: pointer; border: 1px solid #ebeef5; }
 .upload-tip { color: #909399; font-size: 12px; margin-top: 4px; }
 </style>

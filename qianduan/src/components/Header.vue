@@ -1,112 +1,26 @@
 <template>
-  <div class="header">
-    <div class="homeIcon">
-      <el-icon size="30px" @click="handleCollapse" :style="{ transform: isCollapse ? '' : 'rotate(180deg)' }">
-        <expand />
-      </el-icon>
-      <span>首页</span>
-    </div>
-    <div class="user" @mouseenter="isShowUserInfo('show')" @mouseleave="isShowUserInfo('leave')">
-      <img :src="userInfo.headImg">
-      <div class="userInfo" v-show="show">
-        <div class="user-name">{{ userInfo.nickname || userInfo.name }}</div>
-        <div @click="openProfile">个人中心</div>
-        <div @click="loginOut">退出登录</div>
-      </div>
-    </div>
-  </div>
+  <header class="header">
+    <div class="heading"><button class="collapse-button" aria-label="折叠菜单" @click="handleCollapse"><el-icon :size="20"><Fold v-if="!isCollapse" /><Expand v-else /></el-icon></button><span>{{ title }}</span></div>
+    <el-dropdown trigger="click" @command="handleCommand">
+      <button class="account"><img :src="userInfo.headImg || '/avatar.svg'" alt="个人头像" /><span>{{ userInfo.nickname || userInfo.name }}<small>{{ userInfo.identity === 'admin' ? '管理员' : '读者' }}</small></span><el-icon><ArrowDown /></el-icon></button>
+      <template #dropdown><el-dropdown-menu><el-dropdown-item command="profile">个人中心</el-dropdown-item><el-dropdown-item command="logout" divided>退出登录</el-dropdown-item></el-dropdown-menu></template>
+    </el-dropdown>
+  </header>
 </template>
 <script setup>
-import router from '../router/index';
-import { defineProps, ref } from 'vue';
+import router from '../router';
 import emitter from '../utils/eventBus';
-
-/**
- * 获取父组件的参数
- */
-const props = defineProps(['handleCollapse', 'isCollapse','userInfo'])
-/**
- * 鼠标移动个人信息的展示
- */
-const show = ref(false)
-const isShowUserInfo = (type) => {
-  type === 'show' ? show.value = true : show.value = false
-}
-/**
- * 获取用户信息
- */
-
-
-/**
- * 退出登录按钮
- */
-const loginOut = () => {
-  router.push('/login'),
-    localStorage.removeItem('token')
-}
-const openProfile = () => {
-  emitter.emit('menu-selected', 'profile');
-  show.value = false;
+defineProps(['handleCollapse', 'isCollapse', 'userInfo', 'title']);
+const handleCommand = (command) => {
+  if (command === 'profile') emitter.emit('menu-selected', 'profile');
+  else { localStorage.removeItem('token'); router.push('/login'); }
 };
 </script>
-<style lang='less' scoped>
-.userInfo {
-  z-index: 22;
-  display: flex;
-  flex-direction: column;
-  position: absolute;
-  right: 0;
-  top: 52px;
-  min-width: 132px;
-  background-color: #fff;
-  border: 5px;
-  box-shadow: 0 4px 8px 0 rgb(7 17 27 / 10%);
-  text-align: center;
-
-  div:hover {
-    color: #409eff;
-  }
-
-  div {
-    padding: 10px;
-  }
-
-  .user-name {
-    color: #303133;
-    font-weight: 600;
-    cursor: default;
-  }
-}
-
-.header {
-  position: relative;
-  height: 100%;
-  align-items: center;
-  display: flex;
-  justify-content: space-between;
-  padding: 0 24px;
-  border-bottom: 1px solid #edf0f5;
-
-  .homeIcon {
-    display: flex;
-    align-items: center;
-
-    span {
-      margin-left: 10px;
-    }
-  }
-
-    .user {
-    display: flex;
-    justify-content: center;
-    width: 80px;
-    cursor: pointer;
-
-    img {
-      width: 45px;
-      height: 45px;
-      border-radius: 50%;
-    }
-  }
-}
+<style scoped>
+.header { height: 100%; padding: 0 28px; display: flex; align-items: center; justify-content: space-between; }
+.heading { display: flex; gap: 16px; align-items: center; font-size: 14px; color: #64748b; }
+.collapse-button, .account { background: transparent; cursor: pointer; display: flex; align-items: center; color: #334155; }
+.collapse-button { padding: 8px; border-radius: 8px; }.collapse-button:hover { background: #f1f5f9; }
+.account { gap: 10px; text-align: left; }.account img { width: 38px; height: 38px; object-fit: cover; border-radius: 50%; background: #f1f5f9; }
+.account small { display: block; color: #94a3b8; font-size: 11px; margin-top: 3px; }
 </style>
