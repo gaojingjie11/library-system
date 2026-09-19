@@ -43,9 +43,15 @@ git pull
 docker compose up -d --build
 ```
 
-仓库包含 GitHub Actions 自动部署工作流。向 `main` 推送后，Actions 会通过 SSH 登录服务器，在 `DEPLOY_PATH` 执行上面的拉取和 Docker Compose 重建。GitHub 仓库需要配置 `production` Environment 和这些 Secrets：`SERVER_HOST`、`SERVER_PORT`、`SERVER_USER`、`SERVER_SSH_KEY`、`SERVER_KNOWN_HOSTS`、`DEPLOY_PATH`。
+仓库包含 GitHub Actions 自动部署工作流。向 `main` 推送后，Actions 会通过 SSH 登录服务器，在 `/opt/library-system` 拉取代码并重建 Docker Compose。当前工作流只需要这三个 Repository Secrets：`SERVER_IP`、`SERVER_SSH_KEY`、`SERVER_USER`。SSH 端口固定为 22，服务器目录固定为 `/opt/library-system`，主机指纹由 Actions 运行时读取，不需要额外的 `SERVER_KNOWN_HOSTS`。
 
-现有服务器密钥可以复用：将对应私钥完整内容保存为 `SERVER_SSH_KEY`，将服务器目标用户的公钥保留在 `~/.ssh/authorized_keys`，并将 `ssh-keyscan -p 22 服务器IP` 的结果保存为 `SERVER_KNOWN_HOSTS`。私钥只进入 GitHub Secret，不进入仓库。
+现有服务器密钥可以复用：将对应私钥完整内容保存为 `SERVER_SSH_KEY`，将服务器目标用户的公钥保留在 `~/.ssh/authorized_keys`。私钥只进入 GitHub Secret，不进入仓库。Secret 必须配置在当前的 `library-system` 仓库，其他仓库的同名 Secret 不会共享。
+
+## 用户资料和图片生命周期
+
+登录用户可以在“个人中心”修改昵称、头像和密码，登录用户名保持不变。管理员可以在“用户管理”中把其他用户设置为管理员或普通用户，但不能修改自己的身份，系统始终保留至少一个管理员。
+
+头像和图书封面保存到服务器 MinIO 的公开桶。替换成功后，后端会删除旧的本桶图片；默认头像和外部图片不会被误删。MongoDB 只保存图片的公开 URL。
 
 数据不在容器里：MongoDB 保存业务数据，MinIO 保存图片。部署前应分别备份它们。
 

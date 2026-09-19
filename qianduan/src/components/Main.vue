@@ -1,17 +1,23 @@
 <template>
-  <div class="main">
-    <div style="display: flex; align-self: start">
+  <div class="main page-shell">
+    <div class="page-heading">
+      <div>
+        <h2>图书馆藏</h2>
+        <p>搜索、管理和借阅实验室图书</p>
+      </div>
+    </div>
+    <div class="toolbar">
       <el-input
         v-model="payload.title"
         placeholder="输入图书名"
-        style="margin-left: 20px; margin-right: 50px;width: 70px"
+        class="filter-input"
       >
       </el-input>
 
       <el-input
         v-model="payload.outhor"
         placeholder="输入作者名"
-        style="margin-left: 50px; margin-right: 50px;width: 70px"
+        class="filter-input"
       >
       </el-input>
 
@@ -32,14 +38,14 @@
       <el-input
         v-model="payload.miniPoint"
         placeholder="输入最低评分"
-        style="margin-left: 50px; margin-right: 50px;width: 70px"
+        class="filter-input"
       >
       </el-input>
 
       <el-input
         v-model="payload.maxPoint"
         placeholder="输入最高评分"
-        style="margin-left: 50px; margin-right: 50px;width: 70px"
+        class="filter-input"
       >
       <!--下拉分类-->
       </el-input>
@@ -47,14 +53,14 @@
       <el-input
         v-model="payload.category"
         placeholder="输入图书类型"
-        style="margin-left: 50px; margin-right: 50px;width: 70px"
+        class="filter-input"
       >
       </el-input>
       
-      <el-button type="primary" @click="handleClick" style="margin-left: 40px"
+      <el-button type="primary" @click="handleClick"
         >搜索</el-button>
 
-      <el-button v-if="isAdmin" type="warning" @click="handleAdd"  style="margin-left: 200px;width: 100px" > 新增图书 </el-button>
+      <el-button v-if="isAdmin" type="warning" @click="handleAdd" > 新增图书 </el-button>
 
 
     </div>
@@ -162,43 +168,41 @@ onMounted(async () => {
 
 .main {
   background-color: #fff;
-  padding: 20px;
+  margin: 0;
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 
-  .input-with-select {
-    width: 100px;
-    margin-bottom: 40px;
+  .toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .filter-input {
+    width: 150px;
   }
 }
 
 :deep(.el-table__header-wrapper) {
-  position: fixed;
-  z-index: 20;
+  position: static;
 }
 
 :deep(.el-table__inner-wrapper) {
   overflow: hidden;
 }
 
-:deep(.el-table__body-wrapper) {
-  margin-top: 40px;
-}
-
-:deep(.el-input__inner) {
-  width: 120px;
-  margin-right: 10px;
-}
-
 :deep(.warning-row) {
   --el-table-tr-bg-color: var(--el-color-warning-light-9) !important;
-  height: 140px !important;
+  height: 104px !important;
 }
 
 .table {
-  height: 80vh;
-  width: 85vw;
+  flex: 1;
+  width: 100%;
   overflow: hidden;
   overflow-y: scroll;
 }

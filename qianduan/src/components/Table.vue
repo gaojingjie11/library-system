@@ -77,5 +77,7 @@ onMounted(()=>{
 .courseImg-img {
   width: 150px;
   height: 100px;
+  border-radius: 8px;
+  object-fit: cover;
 }
 </style>

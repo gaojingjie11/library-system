@@ -2,12 +2,21 @@ html,
 body {
   padding: 0;
   margin: 0;
-  background-color: #f5f5f5;
+  background-color: #f4f7fb;
+  color: #303133;
+  font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+  box-sizing: border-box;
 }
 html,
 body,
 #app {
   height: 100%;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
 }
 
 input {
@@ -24,4 +33,29 @@ a {
 }
 li {
   list-style-type: none;
+}
+
+.page-shell {
+  width: 100%;
+  min-height: 100%;
+  padding: 24px;
+}
+
+.page-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.page-heading h2 {
+  margin: 0;
+  color: #1f2d3d;
+  font-size: 22px;
+}
+
+.page-heading p {
+  margin: 6px 0 0;
+  color: #909399;
+  font-size: 13px;
 }

@@ -16,6 +16,8 @@
           <Main3 v-if="showComponent === 'Main3'" /> 
 
           <Main4 v-if="showComponent === 'Main4'" />
+
+          <Profile v-if="showComponent === 'Profile'" :userInfo="userInfo" @updated="getUserInfoData" />
         </el-main>
       </el-container>
     </el-container>
@@ -28,8 +30,8 @@ import Aside from '../components/Aside.vue'
 import Main from '../components/Main.vue'
 import Main2 from '../components/Main2.vue'
 import Main3 from '../components/Main3.vue'
+import Profile from '../components/Profile.vue'
 import { onMounted, ref ,onBeforeUnmount} from 'vue'
-import request from '../utils/request'
 import { getUserInfo } from '@/api'
 import { reactive } from 'vue'
 import emitter from '@/utils/eventBus'
@@ -57,6 +59,9 @@ const updateMainShow = (type) => {
     showComponent.value = 'Main4'; // 点击借阅情况时显示Main3
 
   }
+  else if(type === 'profile') {
+    showComponent.value = 'Profile';
+  }
   else {  
     // 默认情况或未知类型  
     showComponent.value = 'Main';  
@@ -65,6 +70,7 @@ const updateMainShow = (type) => {
 
 const userInfo = reactive({
   name: '',
+  nickname: '',
   headImg: '',
   identity: '',
   userid:''
@@ -74,14 +80,11 @@ const userInfo = reactive({
 const getUserInfoData = async () => {
   const res = await getUserInfo()
   
-  if (res?.name && res?.headImg) {
-    userInfo.name = res.name
-    userInfo.headImg = res.headImg
-    userInfo.identity=res.identity
-    userInfo.userid=res.userid
-
-  }
-  console.log(userInfo);
+  userInfo.name = res.name || '';
+  userInfo.nickname = res.nickname || res.name || '';
+  userInfo.headImg = res.headImg || '/avatar.svg';
+  userInfo.identity = res.identity || '';
+  userInfo.userid = res.userid || '';
 }
 
 
@@ -108,9 +111,7 @@ onBeforeUnmount(() => {
 
 <style lang='less' scoped>
 .el-aside {
-  width: auto;
-  background-color: #545c64;
-  width: auto;
+  background-color: #1f2937;
   overflow: hidden;
 }
 
@@ -120,10 +121,13 @@ onBeforeUnmount(() => {
 
 .el-main {
   display: flex;
+  padding: 0;
+  background: #f4f7fb;
 }
 
 .el-header {
-  // padding: 0 20px 0 0;
   background-color: #fff;
+  padding: 0;
+  height: 64px;
 }
 </style>

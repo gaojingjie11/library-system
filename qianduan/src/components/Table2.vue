@@ -1,28 +1,47 @@
 <template>
   <div class="table">
     <el-table :data="list" :row-class-name="tableRowClassName">
-      <el-table-column prop="head_img" label="头像">
+      <el-table-column prop="head_img" label="头像" width="100">
         <template #default="scope">
-          <img :src="scope.row.head_img" class="head-img" >
+          <img :src="scope.row.head_img || '/avatar.svg'" class="head-img" alt="头像">
         </template>
       </el-table-column>
       <!-- <el-table-column prop="id1" label="id">
       </el-table-column> -->
-      <el-table-column prop="name" label="名字">
+      <el-table-column prop="name" label="账号" min-width="120">
       </el-table-column>
-      <!-- <el-table-column prop="role" label="角色">
-      </el-table-column> -->
+      <el-table-column label="昵称" min-width="120">
+        <template #default="scope">{{ scope.row.nickname || scope.row.name }}</template>
+      </el-table-column>
+      <el-table-column label="身份" min-width="100">
+        <template #default="scope">
+          <el-tag :type="scope.row.identity === 'admin' ? 'warning' : 'info'">
+            {{ scope.row.identity === 'admin' ? '管理员' : '普通用户' }}
+          </el-tag>
+        </template>
+      </el-table-column>
       
       <el-table-column label="操作">
         <template #default="scope">
+          <div class="action-group">
           <el-popconfirm title="确定要重置吗?" @confirm="changeHandle(scope.row._id)">
             <template #reference>
-              <el-button type="warning">重置密码</el-button>
+              <el-button size="small" type="warning">重置密码</el-button>
             </template>
           </el-popconfirm>
         
           
-          <el-button type="primary" @click="openDrawer(scope.row._id)">借阅信息</el-button>
+          <el-button size="small" type="primary" @click="openDrawer(scope.row._id)">借阅信息</el-button>
+
+          <el-button
+            size="small"
+            :type="scope.row.identity === 'admin' ? 'warning' : 'success'"
+            :disabled="String(scope.row._id) === String(currentUserId)"
+            @click="identityHandle(scope.row)"
+          >
+            {{ scope.row.identity === 'admin' ? '设为普通用户' : '设为管理员' }}
+          </el-button>
+          </div>
           
 
 
@@ -68,9 +87,10 @@
   </div>
 </template>
 <script setup>
-import { defineProps,reactive,ref } from 'vue';
+import { defineProps, reactive, ref, toRefs } from 'vue';
 import { format } from 'date-fns';
-const props = defineProps(['list', 'changeHandle', 'deleteHandle'])
+const props = defineProps(['list', 'changeHandle', 'deleteHandle', 'identityHandle', 'currentUserId'])
+const { list, changeHandle, identityHandle, currentUserId } = toRefs(props);
 import {  borrowbooklist} from '../api/index';
 /**
  * 定义每行课程的区分颜色
@@ -161,8 +181,15 @@ const onDrawerClose = () => {
 </script>
 <style lang='less' scoped>
 .head-img {
-  width: 150px;
-  height: 110px;
+  width: 54px;
+  height: 54px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 .table2 {
   .el-table {
@@ -185,5 +212,9 @@ const onDrawerClose = () => {
   .el-pagination {
     margin-top: 20px;
   }
+}
+
+:deep(.warning-row) {
+  height: 86px !important;
 }
 </style>

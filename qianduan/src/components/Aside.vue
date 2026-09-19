@@ -1,5 +1,5 @@
 <template>
-  <el-menu :collapse="isCollapse" class="el-menu-vertical-demo" active-text-color="#ffd04b" background-color="#545c64"
+  <el-menu :collapse="isCollapse" class="el-menu-vertical-demo" active-text-color="#409eff" background-color="#1f2937"
     text-color="#fff">
     <div class="xd-icon">
       <img src="../assets/xd-icon.png">
@@ -96,7 +96,7 @@ const selectMenu = (type) => {
   align-items: center;
   font-weight: 600;
   height: 60px;
-  background-color: #fff;
+      background-color: #111827;
   white-space: nowrap;
   padding-left: 15px;
 

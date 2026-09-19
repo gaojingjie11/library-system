@@ -21,6 +21,16 @@ export const getUserInfo = () => {
   return request({ method: 'get', url: '/api/v1/user/userInfo' });
 };
 
+export const uploadAvatar = (file) => {
+  const form = new FormData();
+  form.append('file', file);
+  return request({ method: 'post', url: '/api/v1/user/avatar', data: form });
+};
+
+export const updateProfile = (data) => {
+  return request({ method: 'patch', url: '/api/v1/user/profile', data });
+};
+
 
 /**
  * 课程列表数据接口
@@ -93,6 +103,10 @@ export const getuser = (data) => {
  */
 export const changesuer = (data) => {
   return request({ method: 'get', url: '/api/v1/course/userupdate', data });
+};
+
+export const changeUserIdentity = (data) => {
+  return request({ method: 'patch', url: '/api/v1/course/useridentity', data });
 };
 
 /**

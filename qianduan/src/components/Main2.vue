@@ -1,6 +1,12 @@
 <template>
-  <div class="main">
+  <div class="main page-shell">
     <div style="display: flex; align-self: start">
+    <div class="page-heading">
+      <div>
+        <h2>用户管理</h2>
+        <p>查看用户资料、借阅记录和账号身份</p>
+      </div>
+    </div>
     <el-form>
       <el-form-item>
         <el-input
@@ -12,7 +18,7 @@
       <el-button type="primary" @click="handleClick">查询</el-button>
     </el-form>
     </div>
-    <Table :list='data.list' :changeHandle='changeHandle' />
+    <Table :list='data.list' :changeHandle='changeHandle' :identityHandle='identityHandle' :currentUserId='currentUserId' />
     <!-- <Pagination :currentChange="currentChange"></Pagination> -->
     <div style="display: flex; justify-content: center;">  
   <el-pagination background layout="prev, pager, next"   
@@ -21,14 +27,12 @@
     @current-change="handleCurrentChange"/>  
     </div>
   </div>
-  <EditPop :popShow="popShow" v-if='popShow' :message='userItemState.message' :confirmClick='confirmClick' />
 </template>
 <script setup>
 import Table from './Table2.vue'
-import EditPop from './EditPop.vue'
 // import Pagination from './Pagination.vue'
-import { reactive, ref, computed, onMounted } from 'vue'
-import { deleteuser, getuser, changesuer } from '../api/index';
+import { reactive, ref, onMounted } from 'vue'
+import { deleteuser, getuser, changesuer, changeUserIdentity, getUserInfo } from '../api/index';
 // import emitter from '../utils/eventBus'
 /**
  * 初始化的数据
@@ -46,6 +50,7 @@ const payload = reactive({
   size1: 5,
   
 });
+const currentUserId = ref('');
 const getusers = () =>{
   getuser(payload).then((res) => {
     data.list = res.list;
@@ -88,8 +93,8 @@ const getuserData = async (query) => {
     });
   }
 }
-onMounted(async()=>{
-  await getuserData()
+onMounted(async () => {
+  await Promise.all([getuserData(), loadCurrentUser()]);
 })
 
 
@@ -115,6 +120,23 @@ const changeHandle = (val) => {
     //删除接口的调用
     changeuserdata(val)
   }
+
+const identityHandle = async (row) => {
+  const nextIdentity = row.identity === 'admin' ? 'user' : 'admin';
+  try {
+    await ElMessageBox.confirm(`确定将 ${row.nickname || row.name} 设置为${nextIdentity === 'admin' ? '管理员' : '普通用户'}吗？`, '修改身份', { type: 'warning' });
+    const res = await changeUserIdentity({ id: row._id, identity: nextIdentity });
+    ElMessage.success(res.message);
+    await getusers();
+  } catch (error) {
+    if (error !== 'cancel' && error !== 'close') console.error(error);
+  }
+};
+
+const loadCurrentUser = async () => {
+  const res = await getUserInfo();
+  currentUserId.value = String(res.userid);
+};
 
 
 
@@ -154,43 +176,32 @@ const deleteHandle = (val) => {
 
 .main {
   background-color: #fff;
-  padding: 20px;
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
 
-  .input-with-select {
-    width: 400px;
-    margin-bottom: 40px;
+  .page-heading {
+    align-self: stretch;
   }
 }
 
 :deep(.el-table__header-wrapper) {
-  position: fixed;
- 
+  position: static;
 }
 
 :deep(.el-table__inner-wrapper) {
   overflow: hidden;
 }
 
-:deep(.el-table__body-wrapper) {
-  margin-top: 40px;
-}
-
-:deep(.el-input__inner) {
-  width: 300px;
-  margin-right: 10px;
-}
-
 :deep(.warning-row) {
   --el-table-tr-bg-color: var(--el-color-warning-light-9) !important;
-  height: 140px !important;
+  height: 86px !important;
 }
 
 .table {
-  height: 80vh;
-  width: 85vw;
+  flex: 1;
+  width: 100%;
   overflow: hidden;
   overflow-y: scroll;
 }

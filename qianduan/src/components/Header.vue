@@ -9,7 +9,8 @@
     <div class="user" @mouseenter="isShowUserInfo('show')" @mouseleave="isShowUserInfo('leave')">
       <img :src="userInfo.headImg">
       <div class="userInfo" v-show="show">
-        <div>{{ userInfo.name }}</div>
+        <div class="user-name">{{ userInfo.nickname || userInfo.name }}</div>
+        <div @click="openProfile">个人中心</div>
         <div @click="loginOut">退出登录</div>
       </div>
     </div>
@@ -17,8 +18,8 @@
 </template>
 <script setup>
 import router from '../router/index';
-import { defineProps, onMounted, ref, reactive } from 'vue';
-import { getUserInfo } from '../api/index';
+import { defineProps, ref } from 'vue';
+import emitter from '../utils/eventBus';
 
 /**
  * 获取父组件的参数
@@ -43,6 +44,10 @@ const loginOut = () => {
   router.push('/login'),
     localStorage.removeItem('token')
 }
+const openProfile = () => {
+  emitter.emit('menu-selected', 'profile');
+  show.value = false;
+};
 </script>
 <style lang='less' scoped>
 .userInfo {
@@ -51,7 +56,8 @@ const loginOut = () => {
   flex-direction: column;
   position: absolute;
   right: 0;
-  bottom: -77px;
+  top: 52px;
+  min-width: 132px;
   background-color: #fff;
   border: 5px;
   box-shadow: 0 4px 8px 0 rgb(7 17 27 / 10%);
@@ -64,6 +70,12 @@ const loginOut = () => {
   div {
     padding: 10px;
   }
+
+  .user-name {
+    color: #303133;
+    font-weight: 600;
+    cursor: default;
+  }
 }
 
 .header {
@@ -72,6 +84,8 @@ const loginOut = () => {
   align-items: center;
   display: flex;
   justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid #edf0f5;
 
   .homeIcon {
     display: flex;
@@ -82,10 +96,11 @@ const loginOut = () => {
     }
   }
 
-  .user {
+    .user {
     display: flex;
     justify-content: center;
     width: 80px;
+    cursor: pointer;
 
     img {
       width: 45px;
