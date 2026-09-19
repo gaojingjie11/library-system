@@ -43,6 +43,10 @@ git pull
 docker compose up -d --build
 ```
 
+仓库包含 GitHub Actions 自动部署工作流。向 `main` 推送后，Actions 会通过 SSH 登录服务器，在 `DEPLOY_PATH` 执行上面的拉取和 Docker Compose 重建。GitHub 仓库需要配置 `production` Environment 和这些 Secrets：`SERVER_HOST`、`SERVER_PORT`、`SERVER_USER`、`SERVER_SSH_KEY`、`SERVER_KNOWN_HOSTS`、`DEPLOY_PATH`。
+
+现有服务器密钥可以复用：将对应私钥完整内容保存为 `SERVER_SSH_KEY`，将服务器目标用户的公钥保留在 `~/.ssh/authorized_keys`，并将 `ssh-keyscan -p 22 服务器IP` 的结果保存为 `SERVER_KNOWN_HOSTS`。私钥只进入 GitHub Secret，不进入仓库。
+
 数据不在容器里：MongoDB 保存业务数据，MinIO 保存图片。部署前应分别备份它们。
 
 本机 Docker 服务未运行时无法在开发机执行镜像构建；服务器执行 `docker compose build` 即可验证 Dockerfile。
