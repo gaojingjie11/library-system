@@ -1,0 +1,17 @@
+const router = require('express').Router();
+const controller = require('../controllers/courseController');
+const { authenticate, requireAdmin } = require('../middleware/auth');
+const { asyncHandler } = require('../utils/http');
+router.use(authenticate);
+router.get('/find', asyncHandler(controller.listVideo));
+router.get('/update', requireAdmin, asyncHandler(controller.updateVideoById));
+router.post('/add', requireAdmin, asyncHandler(controller.addbook));
+router.get('/delete', requireAdmin, asyncHandler(controller.deleteVideoById));
+router.get('/borrowbook', asyncHandler(controller.borrowbook));
+router.get('/borrowbooklist', asyncHandler(controller.listbook));
+router.get('/returnbook', asyncHandler(controller.returnbook));
+router.get('/allborrowbooklist', requireAdmin, asyncHandler(controller.alllistbook));
+router.get('/usershow', requireAdmin, asyncHandler(controller.usershow));
+router.get('/userupdate', requireAdmin, asyncHandler(controller.updateuserById));
+router.get('/userdelete', requireAdmin, asyncHandler(controller.deleteuserById));
+module.exports = router;

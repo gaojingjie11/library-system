@@ -1,0 +1,10 @@
+const router = require('express').Router();
+const expressJoi = require('@escook/express-joi');
+const { userCheck } = require('../utils/check');
+const controller = require('../controllers/userController');
+const { authenticate } = require('../middleware/auth');
+const { asyncHandler } = require('../utils/http');
+router.post('/register', expressJoi(userCheck), asyncHandler(controller.registerController));
+router.post('/login', expressJoi(userCheck), asyncHandler(controller.loginController));
+router.get('/userInfo', authenticate, asyncHandler(controller.userInfoController));
+module.exports = router;

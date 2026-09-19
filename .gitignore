@@ -1,0 +1,12 @@
+.DS_Store
+.git.gitee-backup
+**/.git.gitee-backup
+**/node_modules/
+**/.env
+**/.env.*
+!**/.env.example
+**/dist/
+**/uploads/
+*.log
+.idea/
+.vscode/

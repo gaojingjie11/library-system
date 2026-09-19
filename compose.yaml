@@ -1,0 +1,11 @@
+services:
+  backend:
+    build: ./kaohe
+    restart: unless-stopped
+    env_file: ./kaohe/.env
+    ports: ["9100:3000"]
+  frontend:
+    build: ./qianduan
+    restart: unless-stopped
+    depends_on: [backend]
+    ports: ["91:80"]
