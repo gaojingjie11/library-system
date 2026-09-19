@@ -7,7 +7,7 @@ const bcrypt = require('bcryptjs');
 const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
-let mongod, db, client, server, base, uploadDir, admin, user, other, book, service;
+let mongod, db, client, server, base, uploadDir, admin, user, other, book, service, ensureIndexes;
 const secret = 'local-test-only-secret-with-at-least-32-characters';
 const token = (u) => 'Bearer ' + jwt.sign({ _id: u._id.toString() }, secret);
 async function request(route, { who, method = 'GET', body, rawBody } = {}) {
@@ -30,12 +30,13 @@ before(async () => {
   const config = require('../config/db');
   client = config.client; db = config.database;
   await config.connectToMongoDB();
+  // 必须在环境变量就绪之后再 require：config/db 在模块加载时就读 process.env
+  ({ ensureIndexes } = require('../config/indexes'));
   const { app } = require('../app');
   server = await new Promise(resolve => { const s = app.listen(0, '127.0.0.1', () => resolve(s)); });
   base = `http://127.0.0.1:${server.address().port}`;
   service = require('../services/lending').createLendingService(db);
-});
-after(async () => {
+});after(async () => {
   if (server) await new Promise(resolve => server.close(resolve));
   await client?.close();
   await mongod?.stop();
@@ -43,6 +44,7 @@ after(async () => {
 });
 beforeEach(async () => {
   await db.dropDatabase();
+  await ensureIndexes();
   const pwd = await bcrypt.hash('123456', 4);
   admin = { _id: new ObjectId(), name: 'admin', identity: 'admin', del: 0, pwd };
   user = { _id: new ObjectId(), name: 'reader', identity: 'user', del: 0, pwd };
@@ -188,4 +190,64 @@ test('admin upload refuses when MinIO is not configured instead of writing local
   const result = await request('/upload', { who: admin, method: 'POST', rawBody: data });
   assert.equal(result.status, 503);
   assert.equal(result.body.message, '服务暂时不可用，请稍后重试');
+});
+test('并发注册同名账号只有一个成功，其余返回 409', async () => {
+  const results = await Promise.all(Array.from({ length: 8 }, () =>
+    request('/api/v1/user/register', { method: 'POST', body: { userName: 'dup', password: '123456' } })));
+  assert.equal(results.filter(r => r.status === 200).length, 1);
+  assert.equal(results.filter(r => r.status === 409).length, 7);
+  assert.equal(await db.collection('user').countDocuments({ name: 'dup', del: 0 }), 1);
+  assert.equal((await request('/api/v1/user/login', { method: 'POST', body: { userName: 'dup', password: '123456' } })).status, 200);
+});
+test('已删除的账号不再占用用户名，可以重新注册并登录', async () => {
+  assert.equal((await request('/api/v1/user/register', { method: 'POST', body: { userName: 'ghost', password: '123456' } })).status, 200);
+  const ghost = await db.collection('user').findOne({ name: 'ghost', del: 0 });
+  assert.equal((await request('/api/v1/course/userdelete?id=' + ghost._id, { who: admin })).status, 200);
+  assert.equal((await request('/api/v1/user/login', { method: 'POST', body: { userName: 'ghost', password: '123456' } })).status, 401);
+  assert.equal((await request('/api/v1/user/register', { method: 'POST', body: { userName: 'ghost', password: '123456' } })).status, 200);
+  assert.equal(await db.collection('user').countDocuments({ name: 'ghost' }), 2);
+  assert.equal(await db.collection('user').countDocuments({ name: 'ghost', del: 0 }), 1);
+  assert.equal((await request('/api/v1/user/login', { method: 'POST', body: { userName: 'ghost', password: '123456' } })).status, 200);
+});
+test('删除用户会自动归还其在借图书并回补库存', async () => {
+  await db.collection('book').updateOne({ _id: book._id }, { $set: { num: 3 } });
+  const first = await service.borrow(book._id, user._id);
+  const second = await service.borrow(book._id, user._id);
+  assert.equal((await db.collection('book').findOne({ _id: book._id })).num, 1);
+  const response = await request('/api/v1/course/userdelete?id=' + user._id, { who: admin });
+  assert.equal(response.status, 200);
+  assert.match(response.body.data.message, /已自动归还其借阅中的 2 本图书/);
+  const after = await db.collection('book').findOne({ _id: book._id });
+  assert.equal(after.num, 3);
+  const byId = new Map(after.borrowings.map(loan => [String(loan._id), loan]));
+  assert.equal(byId.get(String(first._id)).del, 1);
+  assert.equal(byId.get(String(second._id)).del, 1);
+  assert.ok(byId.get(String(first._id)).returnTime instanceof Date);
+  assert.equal(await db.collection('book').countDocuments({ 'borrowings': { $elemMatch: { userid: user._id, del: 0 } } }), 0);
+});
+test('图书列表返回当前用户未归还的借阅数量，供前端提示重复借阅', async () => {
+  await db.collection('book').updateOne({ _id: book._id }, { $set: { num: 5 } });
+  assert.equal((await request('/api/v1/course/find', { who: user })).body.data.list[0].myBorrowCount, 0);
+  const first = await service.borrow(book._id, user._id);
+  await service.borrow(book._id, user._id);
+  assert.equal((await request('/api/v1/course/find', { who: user })).body.data.list[0].myBorrowCount, 2);
+  assert.equal((await request('/api/v1/course/find', { who: other })).body.data.list[0].myBorrowCount, 0);
+  await service.returnBook(first._id, user);
+  assert.equal((await request('/api/v1/course/find', { who: user })).body.data.list[0].myBorrowCount, 1);
+});
+test('新增图书的默认库存与 seed 脚本一致，重置密码不再是固定弱口令', async () => {
+  const added = await request('/api/v1/course/add', { method: 'POST', who: admin, body: { title: 'NewBook', outhor: 'A', category: 'N', point: 8, course_img: 'http://example.test/c.png' } });
+  assert.equal(added.status, 200);
+  assert.equal((await db.collection('book').findOne({ title: 'NewBook' })).num, 10);
+  const reset = await request('/api/v1/course/userupdate?id=' + user._id, { who: admin });
+  assert.equal(reset.status, 200);
+  assert.equal(reset.body.data.password.length, 8);
+  assert.notEqual(reset.body.data.password, '123456');
+  assert.equal((await request('/api/v1/user/login', { method: 'POST', body: { userName: 'reader', password: reset.body.data.password } })).status, 200);
+  assert.equal((await request('/api/v1/user/login', { method: 'POST', body: { userName: 'reader', password: '123456' } })).status, 401);
+});
+test('重复活跃账号存在时拒绝建唯一索引并给出可读提示', async () => {
+  await db.collection('user').dropIndex('user_name_active_unique');
+  await db.collection('user').insertOne({ _id: new ObjectId(), name: 'reader', identity: 'user', del: 0, pwd: 'x' });
+  await assert.rejects(ensureIndexes, /存在重复的活跃账号，无法建立用户名唯一索引：reader\(2 个\)/);
 });

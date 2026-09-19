@@ -31,8 +31,7 @@ import { deleteuser, getuser, changesuer, changeUserIdentity, getUserInfo } from
  */
 const data = reactive({
   list: [],
-  page1: 1,//默认展示第一页
-  total: "", //课程总数
+  total: 0, //用户总数
 })
 
 
@@ -43,21 +42,31 @@ const payload = reactive({
   
 });
 const currentUserId = ref('');
-const getusers = () =>{
-  getuser(payload).then((res) => {
+const getusers = async () => {
+  try {
+    const res = await getuser(payload);
+    // 搜索条件变化后结果可能不足当前页数，回退到最后一页，避免出现"空白页"
+    const lastPage = Math.max(1, Math.ceil(res.total / payload.size1));
+    if (payload.page1 > lastPage) {
+      payload.page1 = lastPage;
+      return getusers();
+    }
     data.list = res.list;
     data.total = res.total;
-  }).catch(err => {
-    console.log(err);
-  });
+  } catch (error) {
+    ElMessage.error('获取用户列表失败：' + error.message);
+  }
 }
 
 const handleCurrentChange = (val) => {
- 
   payload.page1 = val;
   //切换分页的接口
-  getusers( payload.page1)
+  getusers()
 }
+
+onMounted(async () => {
+  await Promise.all([getusers(), loadCurrentUser()]);
+})
 
 
 
@@ -66,33 +75,13 @@ const handleCurrentChange = (val) => {
 /**
  * 用户列表数据获取
  */
-const getuserData = async (query) => {
-  const name=data.name
-  const page1 = data.page1;
-  const size1 = 5;
-  //发送请求到后端进行获取数据
-  try {
-    const res = await getuser({ name:name, page1: page1, size1: size1 });
-    console.log("查到的书", res);
-    //筛选符合分类的用户
-    data.list = res.list;
-    //更新用户的总数，用于分页显示
-    data.total = res.total;
-  } catch (error) {
-    ElMessage({
-      message: "获取数据失败：" + error.message,
-      type: "error",
-    });
-  }
-}
-onMounted(async () => {
-  await Promise.all([getuserData(), loadCurrentUser()]);
-})
 
 
 
 //搜索的按钮
 const handleClick = async () => {
+  // 换了搜索条件必须回到第 1 页，否则 skip 会越过结果集，界面上会显示空列表
+  payload.page1 = 1;
   getusers();
 };
 
@@ -144,15 +133,16 @@ const deleteuserdata = async (query) => {
       type: 'success'
     })
   }
-  //当前也的数据清零时，重置到第一页
-  if (data.list.length === 0 && data.page1 > 1) {
-    getuserData({  page1: 1 })
+  //当前页的数据清零时，重置到第一页
+  if (data.list.length === 0 && payload.page1 > 1) {
+    payload.page1 = 1;
   }
+  await getusers();
 }
 const deleteHandle = (val) => {
   if (val) {
     data.list = data.list.filter((item) => {
-      return item.id !== val
+      return item._id !== val
     })
     //删除接口的调用
     deleteuserdata(val)

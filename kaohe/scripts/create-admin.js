@@ -9,7 +9,7 @@ const joi = require('joi');
     if (error) throw new Error('请提供 ADMIN_NAME（1–6 位非空字符）和 ADMIN_PASSWORD（6–12 位非空字符）');
     await connectToMongoDB();
     const users = database.collection('user');
-    if (await users.findOne({ name: credentials.userName })) throw new Error('用户名已存在；本命令不会覆盖或提升已有账号');
+    if (await users.findOne({ name: credentials.userName, del: 0 })) throw new Error('用户名已存在；本命令不会覆盖或提升已有账号');
     await users.insertOne({ name: credentials.userName, pwd: await bcrypt.hash(credentials.password, 10), identity: 'admin', head_img: '/avatar.svg', del: 0 });
     console.log('管理员账号已创建');
   } catch (error) {

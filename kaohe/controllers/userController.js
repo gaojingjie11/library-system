@@ -5,12 +5,21 @@ const { jwtSecretKey } = require('../config/jwtSecretKey');
 const { HttpError, text } = require('../utils/http');
 const { deleteManagedImage, managedObjectKey, uploadImage } = require('../services/storage');
 
+const NAME_TAKEN = '该用户名已经存在';
 exports.registerController = async (req, res) => {
   const userName = text(req.body.userName, '用户名');
   const password = text(req.body.password, '密码');
   const users = database.collection('user');
-  if (await users.findOne({ name: userName })) throw new HttpError(409, '该用户名已经存在');
-  await users.insertOne({ name: userName, pwd: await bcrypt.hash(password, 10), head_img: '/avatar.svg', identity: 'user', del: 0 });
+  // 只查活跃账号：已删除的用户名可以重新注册
+  if (await users.findOne({ name: userName, del: 0 })) throw new HttpError(409, NAME_TAKEN);
+  const document = { name: userName, pwd: await bcrypt.hash(password, 10), head_img: '/avatar.svg', identity: 'user', del: 0 };
+  try {
+    await users.insertOne(document);
+  } catch (error) {
+    // 上面的查重和插入分两步，并发时都会通过。真正的唯一性由 user_name_active_unique 索引保证
+    if (error.code === 11000) throw new HttpError(409, NAME_TAKEN);
+    throw error;
+  }
   res.send({ code: 0, data: { message: '注册成功' } });
 };
 exports.loginController = async (req, res) => {

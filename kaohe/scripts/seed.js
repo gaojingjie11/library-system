@@ -35,7 +35,7 @@ async function uploadAvatar() {
 
 async function ensureUser(name, password, identity, avatar) {
   const users = database.collection('user');
-  const existing = await users.findOne({ name });
+  const existing = await users.findOne({ name, del: 0 });
   if (existing) return existing;
   const result = await users.insertOne({ name, pwd: await bcrypt.hash(password, 10), identity, head_img: avatar, del: 0 });
   return { _id: result.insertedId, name, identity, del: 0 };

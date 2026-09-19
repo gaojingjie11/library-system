@@ -1,6 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const { client, database, connectToMongoDB } = require('./config/db');
+const { ensureIndexes } = require('./config/indexes');
 const { authenticate, requireAdmin } = require('./middleware/auth');
 const { asyncHandler, HttpError } = require('./utils/http');
 const { upload } = require('./middleware/upload');
@@ -23,8 +24,9 @@ async function start() {
   await connectToMongoDB();
   // Older versions stored loans in a separate collection. Never silently hide those loans.
   if (await database.collection('list').findOne({ del: 0 })) throw new Error('检测到旧版未归还记录，请先迁移 list 到 book.borrowings 后启动');
+  await ensureIndexes();
   const port = Number(process.env.PORT || 3000);
   return app.listen(port, () => console.log(`服务启动在 http://127.0.0.1:${port}`));
 }
-if (require.main === module) start().catch(async () => { console.error('启动失败：请检查数据库配置和旧版借阅记录'); await client.close(); process.exitCode = 1; });
+if (require.main === module) start().catch(async (error) => { console.error('启动失败：' + error.message); await client.close(); process.exitCode = 1; });
 module.exports = { app, start };
