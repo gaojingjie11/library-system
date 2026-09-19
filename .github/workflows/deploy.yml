@@ -36,4 +36,4 @@ jobs:
             -o BatchMode=yes \
             -o StrictHostKeyChecking=yes \
             -p 22 "$SERVER_USER@$SERVER_IP" \
-            "cd '/opt/library-system' && git pull --ff-only origin main && docker compose -p library-system up -d --build --remove-orphans && docker compose -p library-system ps"
+            "git config --global --add safe.directory /opt/library-system && git -C '/opt/library-system' pull --ff-only origin main && docker compose -f '/opt/library-system/compose.yaml' -p library-system up -d --build --remove-orphans && docker compose -f '/opt/library-system/compose.yaml' -p library-system ps"
