@@ -1,5 +1,3 @@
-const path = require('path');
-const fs = require('fs');
 const { randomUUID } = require('crypto');
 const bcrypt = require('bcryptjs');
 const Minio = require('minio');
@@ -7,6 +5,8 @@ const { client, database, connectToMongoDB } = require('../config/db');
 
 const bucket = process.env.MINIO_BUCKET || 'lab-library';
 const publicBase = (process.env.MINIO_PUBLIC_URL || '').replace(/\/$/, '');
+const cover = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aU1sAAAAASUVORK5CYII=', 'base64');
+const avatar = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" rx="40" fill="#e5e7eb"/><circle cx="40" cy="29" r="14" fill="#64748b"/><path d="M14 74a26 26 0 0 1 52 0" fill="#64748b"/></svg>');
 const minio = new Minio.Client({
   endPoint: process.env.MINIO_HOST,
   port: Number(process.env.MINIO_PORT || 9000),
@@ -23,14 +23,13 @@ async function ensurePublicBucket() {
   }));
 }
 
-async function uploadCover(file, key) {
-  await minio.fPutObject(bucket, key, file, { 'Content-Type': 'image/png' });
+async function uploadCover(key) {
+  await minio.putObject(bucket, key, cover, cover.length, { 'Content-Type': 'image/png' });
   return `${publicBase}/${key}`;
 }
 
 async function uploadAvatar() {
-  const file = path.resolve(__dirname, '../../qianduan/public/avatar.svg');
-  await minio.fPutObject(bucket, 'avatar.svg', file, { 'Content-Type': 'image/svg+xml' });
+  await minio.putObject(bucket, 'avatar.svg', avatar, avatar.length, { 'Content-Type': 'image/svg+xml' });
   return `${publicBase}/avatar.svg`;
 }
 
@@ -47,10 +46,9 @@ async function main() {
   if (!publicBase) throw new Error('请配置 MINIO_PUBLIC_URL');
   await connectToMongoDB();
   await ensurePublicBucket();
-  const coverPath = path.resolve(__dirname, '../../qianduan/src/assets/logo.png');
   const coverKeys = ['cover-library.jpg', 'cover-node.jpg', 'cover-security.jpg', 'cover-database.jpg'];
   const covers = [];
-  for (const key of coverKeys) covers.push(await uploadCover(coverPath, key));
+  for (const key of coverKeys) covers.push(await uploadCover(key));
   const avatar = await uploadAvatar();
   const admin = await ensureUser(process.env.ADMIN_NAME || 'admin', process.env.ADMIN_PASSWORD, 'admin', avatar);
   const reader = await ensureUser(process.env.USER_NAME || 'reader', process.env.USER_PASSWORD, 'user', avatar);
