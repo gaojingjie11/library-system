@@ -13,5 +13,6 @@ router.get('/returnbook', asyncHandler(controller.returnbook));
 router.get('/allborrowbooklist', requireAdmin, asyncHandler(controller.alllistbook));
 router.get('/usershow', requireAdmin, asyncHandler(controller.usershow));
 router.get('/userupdate', requireAdmin, asyncHandler(controller.updateuserById));
+router.patch('/useridentity', requireAdmin, asyncHandler(controller.updateUserIdentity));
 router.get('/userdelete', requireAdmin, asyncHandler(controller.deleteuserById));
 module.exports = router;

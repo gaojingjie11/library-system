@@ -10,7 +10,7 @@ const authenticate = asyncHandler(async (req, res, next) => {
     claims = jwt.verify(match[1], jwtSecretKey, { algorithms: ['HS256'] });
     id = objectId(claims._id);
   } catch { throw new HttpError(401, '身份认证失败'); }
-  const user = await database.collection('user').findOne({ _id: id, del: 0 }, { projection: { _id: 1, name: 1, head_img: 1, identity: 1 } });
+  const user = await database.collection('user').findOne({ _id: id, del: 0 }, { projection: { _id: 1, name: 1, nickname: 1, head_img: 1, identity: 1 } });
   if (!user) throw new HttpError(401, '身份认证失败');
   req.user = user;
   next();

@@ -58,6 +58,10 @@ test('all protected routes reject anonymous requests; ordinary users cannot mana
   for (const route of ['update', 'delete', 'allborrowbooklist', 'usershow', 'userupdate', 'userdelete']) {
     assert.equal((await request('/api/v1/course/' + route, { who: user })).status, 403, route);
   }
+  assert.equal((await request('/api/v1/course/useridentity', { method: 'PATCH' })).status, 401);
+  assert.equal((await request('/api/v1/course/useridentity', { method: 'PATCH', who: user, body: {} })).status, 403);
+  assert.equal((await request('/api/v1/user/profile', { who: user, method: 'PATCH', body: {} })).status, 400);
+  assert.equal((await request('/api/v1/user/avatar', { who: user, method: 'POST' })).status, 400);
   assert.equal((await request('/api/v1/course/add', { method: 'POST', who: user, body: {} })).status, 403);
   assert.equal((await request('/upload', { method: 'POST' })).status, 401);
   assert.equal((await request('/upload', { method: 'POST', who: user })).status, 403);
@@ -77,6 +81,46 @@ test('user list includes no password hash or unapproved fields', async () => {
   assert.equal(result.status, 200);
   assert.equal(result.body.data.total, 3);
   for (const row of result.body.data.list) assert.deepEqual(Object.keys(row).sort(), ['_id', 'identity', 'name']);
+});
+test('profile updates nickname and password without changing login name', async () => {
+  const result = await request('/api/v1/user/profile', { who: user, method: 'PATCH', body: { nickname: '阅览者', password: 'Reader@26' } });
+  assert.equal(result.status, 200);
+  assert.equal(result.body.data.name, 'reader');
+  assert.equal(result.body.data.nickname, '阅览者');
+  assert.equal((await request('/api/v1/user/login', { method: 'POST', body: { userName: 'reader', password: 'Reader@26' } })).status, 200);
+  const info = await request('/api/v1/user/userInfo', { who: user });
+  assert.equal(info.body.data.nickname, '阅览者');
+  assert.equal(info.body.data.name, 'reader');
+});
+test('role changes protect ordinary users, self changes, and the last admin', async () => {
+  assert.equal((await request('/api/v1/course/useridentity', { who: user, method: 'PATCH', body: { id: other._id, identity: 'admin' } })).status, 403);
+  assert.equal((await request('/api/v1/course/useridentity', { who: admin, method: 'PATCH', body: { id: admin._id, identity: 'user' } })).status, 400);
+  assert.equal((await request('/api/v1/course/useridentity', { who: admin, method: 'PATCH', body: { id: user._id, identity: 'admin' } })).status, 200);
+  assert.equal((await request('/api/v1/course/useridentity', { who: admin, method: 'PATCH', body: { id: other._id, identity: 'admin' } })).status, 200);
+  assert.equal((await request('/api/v1/course/useridentity', { who: admin, method: 'PATCH', body: { id: user._id, identity: 'user' } })).status, 200);
+  assert.equal((await request('/api/v1/course/useridentity', { who: admin, method: 'PATCH', body: { id: other._id, identity: 'user' } })).status, 200);
+  const last = await request('/api/v1/course/userdelete?id=' + admin._id, { who: admin });
+  assert.equal(last.status, 409);
+});
+test('storage deletes only managed MinIO objects', async () => {
+  const previous = {
+    driver: process.env.UPLOAD_DRIVER,
+    publicUrl: process.env.MINIO_PUBLIC_URL,
+    bucket: process.env.MINIO_BUCKET
+  };
+  process.env.UPLOAD_DRIVER = 'minio';
+  process.env.MINIO_PUBLIC_URL = 'http://42.193.104.173:9000/lab-library';
+  process.env.MINIO_BUCKET = 'lab-library';
+  const removed = [];
+  const { createStorage } = require('../services/storage');
+  const storage = createStorage({ getClient: () => ({ removeObject: async (bucket, key) => removed.push({ bucket, key }) }) });
+  assert.equal(await storage.deleteManagedImage('/avatar.svg'), false);
+  assert.equal(await storage.deleteManagedImage('https://example.com/old.png'), false);
+  assert.equal(await storage.deleteManagedImage('http://42.193.104.173:9000/lab-library/old%20cover.png'), true);
+  assert.deepEqual(removed, [{ bucket: 'lab-library', key: 'old cover.png' }]);
+  process.env.UPLOAD_DRIVER = previous.driver;
+  process.env.MINIO_PUBLIC_URL = previous.publicUrl;
+  process.env.MINIO_BUCKET = previous.bucket;
 });
 test('author search uses outhor and treats regex metacharacters literally', async () => {
   await db.collection('book').insertOne({ ...book, _id: new ObjectId(), outhor: 'A.b' });
