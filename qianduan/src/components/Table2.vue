@@ -21,7 +21,7 @@
         </template>
       </el-table-column>
       
-      <el-table-column label="操作">
+      <el-table-column label="操作" width="360">
         <template #default="scope">
           <div class="action-group">
           <el-popconfirm title="确定要重置吗?" @confirm="changeHandle(scope.row._id)">
@@ -188,8 +188,15 @@ const onDrawerClose = () => {
 }
 .action-group {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  flex-wrap: nowrap;
   gap: 8px;
+}
+.table {
+  overflow-x: auto;
+}
+.table :deep(.el-table) {
+  min-width: 820px;
 }
 .table2 {
   .el-table {

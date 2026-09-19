@@ -1,22 +1,14 @@
 <template>
   <div class="main page-shell">
-    <div style="display: flex; align-self: start">
     <div class="page-heading">
       <div>
         <h2>用户管理</h2>
         <p>查看用户资料、借阅记录和账号身份</p>
       </div>
     </div>
-    <el-form>
-      <el-form-item>
-        <el-input
-        v-model="payload.name"
-        placeholder="输入用户姓名"
-        >
-      </el-input>
-      </el-form-item>
+    <div class="toolbar">
+      <el-input v-model="payload.name" placeholder="输入用户姓名" class="search-input" clearable @keyup.enter="handleClick" />
       <el-button type="primary" @click="handleClick">查询</el-button>
-    </el-form>
     </div>
     <Table :list='data.list' :changeHandle='changeHandle' :identityHandle='identityHandle' :currentUserId='currentUserId' />
     <!-- <Pagination :currentChange="currentChange"></Pagination> -->
@@ -170,6 +162,17 @@ const deleteHandle = (val) => {
 
 </script>
 <style lang='less' scoped>
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  width: 320px;
+}
+
 .el-form {
   display: flex;
 }
